@@ -1,0 +1,118 @@
+/domains/nrobo.ru/public_html/catalog/view/theme/theme753/template/product/product.tpl
+
+
+<script>
+$(document).on('click', '#product .byOneClick', function(){
+		var product_name = $('.general_info h2.product-title').text();
+		$('#oneClickBuy input[name="oneClickBuyProduct"]').val(product_name);
+		$('.dark-hover').fadeIn(500);
+		$('.popup.buy-one-click').fadeIn(700);
+	});
+
+	$(document).on('click', '.popup .close-popup', function(){
+		$('.popup').fadeOut(500);
+		$('.dark-hover').fadeOut(700);
+	});
+	$(document).on('click', '.dark-hover', function(){
+		$('.popup').fadeOut(500);
+		$('.dark-hover').fadeOut(700);
+	});
+	</script>
+
+
+
+	/domains/nrobo.ru/public_html/catalog/view/theme/theme753/template/common/footer.tpl
+
+
+<div class="dark-hover"></div>
+<div class="popup buy-one-click" >
+	<span class="close-popup"></span>
+	<div class="popup-title">Заказать в один клик</div>
+	<form id="oneClickBuy" class="after-clear">
+		<input name="oneClickBuyProduct" type="hidden" >
+		<input name="oneClickBuyPhone" type="tel" placeholder="Ваш телефон *">
+
+		<input type="submit" id="oneClickBuySubmit" value="Заказать">
+	</form>
+	<p>Менеджер перезвонит Вам в ближайшее время и оформит заказ (рабочие часы: ПН-ВС с 11.00 до 20.00)</p>
+</div>
+
+
+
+
+
+/domains/enrobo.ru/public_html/catalog/view/javascript/buyoneclick.js
+
+<script>
+$(document).ready(function() {
+
+$('#oneClickBuy').submit(function() {
+		var form_data = $(this).serialize();
+		$.ajax({
+			type: "POST",
+			url: "/ajaxForm/buyOneClick.php",
+			data: form_data,
+			success: function(response) {
+				if(response == 'success'){
+					$('<div class="popup popup-success"><p style="text-align:center;">Ваше заявка успешно отправлена! В ближайшее время с Вами свяжется наш менеджер.</p></div>').appendTo($("body"));
+					$('.popup').fadeOut(500);
+					$('.popup-success').fadeIn(500);
+					setTimeout(function() {
+						$('.popup').fadeOut(500);
+						$('.dark-hover').fadeOut(700);
+					}, 4000);
+					setTimeout(function() {
+						$('.popup-success').remove();
+					}, 5000);
+				}
+			}
+		});
+		return false;
+	});
+
+}
+</script>
+
+
+
+/domains/enrobo.ru/public_html/ajaxForm/buyOneClick.php
+
+
+<?php
+
+if((isset($_POST['oneClickBuyPhone'])&&$_POST['oneClickBuyPhone']!="")){
+
+    $productPage = 'Не удалось определить страницу';
+    if( isset($_POST['oneClickBuyProduct']) && $_POST['oneClickBuyProduct']!="" ){
+        $productPage = $_POST['oneClickBuyProduct'];
+    }
+
+    $to = 'allsales@um-tech.ru';
+    $subject = 'Покупка в один клик с сайта kitchenrobo.ru';
+    $message = '
+          <html>
+              <head>
+                  <title>'.$subject.'</title>
+              </head>
+              <body>
+                  <p>Телефон: '.$_POST['oneClickBuyPhone'].'</p>
+                  <p>Страница с которой поступил заказ: '.$_POST['oneClickBuyProduct'].'</p>
+              </body>
+          </html>';
+
+
+    $user_agent = $_SERVER["HTTP_USER_AGENT"];
+
+
+    $headers  = "Content-type: text/html; charset=utf-8 \r\n";
+    $headers .= "From: kitchenrobo.ru <sendji.kreyl@gmail.com>\r\n";
+    $headers .= 'Браузер пользователя: '.user_browser($user_agent)."<br>";
+    $headers .= 'ip пользователя: '.$_SERVER['REMOTE_ADDR'];
+    mail($to, $subject, $message, $headers);
+    echo 'success';
+}else{
+    echo 'error';
+}
+
+?>
+
